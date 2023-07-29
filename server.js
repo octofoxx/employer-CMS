@@ -23,13 +23,19 @@ var startCMS = function(){
                 startCMS();
             });   
         } else if (answers.start === 'View All Roles') {
-            db.query(`SELECT * FROM roles`, (err, result) => {
+            db.query(`SELECT roles.id, roles.title, department.dept_name AS department, roles.salary
+            FROM roles
+            INNER JOIN department ON roles.department_id = department.id`, (err, result) => {
                 console.log("Viewing All roles: ");
                 console.table(result);
                 startCMS();
             });
         } else if (answers.start === 'View All Employees') {
-            db.query(`SELECT * FROM employee`, (err, result) => {
+            db.query(`SELECT employee.id, employee.codename, employee.race, roles.title AS position, department.dept_name AS department, roles.salary AS salary, manager.codename AS manager
+            FROM employee
+            LEFT JOIN roles ON employee.role_id = roles.id
+            LEFT JOIN department ON roles.department_id = department.id
+            LEFT JOIN employee manager ON employee.manager_id = manager.id`, (err, result) => {
                 console.log("Viewing All employees: ");
                 console.table(result);
                 startCMS();
