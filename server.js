@@ -16,13 +16,24 @@ var startCMS = function(){
         message: 'Welcome Doctor. Please choose a command.',
         choices: ['View All Departments', 'View All Roles', 'View All Employees', 'Add A Department', 'Add A Role', 'Add An Employee', 'Update An Employee Role', 'Log Out']
     }]).then((answers) => {
-        if (answers.prompt === 'View All Departments') {
+        if (answers.start === 'View All Departments') {
             db.query(`SELECT * FROM department`, (err, result) => {
-                if (err) throw err;
                 console.log("Viewing All Departments: ");
                 console.table(result);
                 startCMS();
-            })   
-        }     
+            });   
+        } else if (answers.start === 'View All Roles') {
+            db.query(`SELECT * FROM roles`, (err, result) => {
+                console.log("Viewing All roles: ");
+                console.table(result);
+                startCMS();
+            });
+        } else if (answers.start === 'View All Employees') {
+            db.query(`SELECT * FROM employee`, (err, result) => {
+                console.log("Viewing All employees: ");
+                console.table(result);
+                startCMS();
+            });               
+        };
     });
 };
