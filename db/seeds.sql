@@ -19,6 +19,6 @@ INSERT INTO employee(codename, race, role_id, manager_id)
             ("Closure", "Sarkaz", 6, 1), 
             ("Gavial","Archosauria", 3, 1), 
             ("Penance","Lupo", 7, 1),
-            ("Mayer", "Anaty", 1, 2),
+            ("Mayer", "Anaty", 1, 2);
         
     
