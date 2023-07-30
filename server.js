@@ -47,7 +47,7 @@ var startCMS = function(){
                 message: 'Please provide a name for the department.',
                 validate: (department) =>{
                     if(!department) {
-                        return 'Please provide a name for the department.';
+                        return 'Error! Departments need names, Doctor!';
                     }
                     return true;
                 }
@@ -77,7 +77,7 @@ var startCMS = function(){
                         message: 'what is the salary for this new position?',
                         validate: (salary) =>{
                             if(!salary) {
-                                return 'Error! Salary is required Doctor!';
+                                return 'Error! Salary is required, Doctor!';
                             }
                             return true;
                         }
@@ -108,23 +108,73 @@ var startCMS = function(){
                         });
                     });  
                 });  
-        } else if (answers.start === 'Add An Employee') {  
-            inquirer.prompt([{
-                type: 'input',
-                name: 'department',
-                message: 'Please provide a name for the department.',
-                validate: (department) =>{
-                    if(!department) {
-                        return 'Please provide a name for the department.';
+        } else if (answers.start === 'Add An Employee') {
+            db.query(`Select * FROM employee, roles`,(err, result) => {
+                inquirer.prompt([
+                    {
+                    type: 'input',
+                    name: 'codename',
+                    message: "Please enter the new operator's codename.",
+                    validate: (codename) =>{
+                        if(!codename) {
+                            return 'Error! Codename is required for all new operators, Doctor!';
+                        }
+                        return true;
+                        }
+                    },
+                    {
+                        type: 'input',
+                        name: 'race',
+                        message: 'Please input the race for the new operator.',
+                        validate: (race) =>{
+                            if (!race) {
+                                return "Error! Operator's race is required to provide proper support, Doctor!";
+                            }
+                            return true;
+                        }
+                    },
+                    {  type: 'list',
+                    name: 'role',
+                    message: 'What position will this operator fill on the landship?',
+                    choices: () => {
+                        var array = [];
+                        for (var i = 0; i < result.length; i++) {
+                            array.push(result[i].title);
+                        }
+                        var newArray = [...new Set(array)];
+                        return newArray;
                     }
-                    return true;
+                },
+                {
+                    // Adding Employee Manager
+                    type: 'list',
+                    name: 'manager',
+                    message: 'Who will oversee the operator?',
+                    choices: () => {
+                        var array = [];
+                        for (var i = 0; i < result.length; i++) {
+                            array.push(result[i].codename);
+                        }
+                        var newArray2 = [...new Set(array)];
+                        return newArray2;
+                        }
                 }
-            }]).then((answers) =>{
-                db.query(`INSERT INTO department (dept_name) VALUES (?)`,[answers.department],(err, result) =>{
-                    console.log(`Created ${answers.department} and added to the database.`)
-                    startCMS();
-                });
-            });                 
+            ]).then((answers) => {
+                // Comparing the result and storing it into the variable
+                for (var i = 0; i < result.length; i++) {
+                    if (result[i].title === answers.role) {
+                        var role = result[i];
+                    }
+                }
+
+                db.query(`INSERT INTO employee (codename, race, role_id, manager_id) VALUES (?, ?, ?, ?)`, [answers.codename, answers.race, role.id, answers.manager.id], (err, result) => {
+                    if (err) throw err;
+                    console.log(`Added ${answers.codename} to the database.`)
+                        startCMS();
+                    });
+                });                 
+            })
+            
         } 
     });
 };
