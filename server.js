@@ -215,7 +215,7 @@ var startPRTS = function(){
                         var role = result[i];
                     }
                 }
-                db.query(`UPDATE employee SET ? WHERE ?`, [{role_id: role},{codename:name}],(err,result)=>{
+                db.query(`UPDATE employee SET ? WHERE ?`, [role,name],(err,result)=>{
                     console.log (`Updated the role for operator ${answers.employee} in the database`)
                  startPRTS();
                 });
