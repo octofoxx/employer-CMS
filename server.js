@@ -5,22 +5,22 @@ require('console.table');
 
 db.connect(err => {
     if (err) throw err;
-    console.log("connection established.");
-    startCMS();
+    console.log("connecting to the neural network of Rhodes Island...\nconnection established.");
+ startPRTS();
 });
 
-var startCMS = function(){
+var startPRTS = function(){
     inquirer.prompt([{
         type: 'list',
         name: 'start',
         message: 'Welcome Doctor. Please choose a command.',
-        choices: ['View All Departments', 'View All Roles', 'View All Employees', 'Add A Department', 'Add A Role', 'Add An Employee', 'Update An Employee Role', 'Log Out']
+        choices: ['View All Departments', 'View All Roles', 'View All Employees', 'Add A Department', 'Add A Role', 'Add An Employee', 'Update Employee Role', 'Log Out']
     }]).then((answers) => {
         if (answers.start === 'View All Departments') {
             db.query(`SELECT * FROM department`, (err, result) => {
                 console.log("Viewing All Departments: ");
                 console.table(result);
-                startCMS();
+             startPRTS();
             });   
         } else if (answers.start === 'View All Roles') {
             db.query(`SELECT roles.id, roles.title, department.dept_name AS department, roles.salary
@@ -28,7 +28,7 @@ var startCMS = function(){
             INNER JOIN department ON roles.department_id = department.id`, (err, result) => {
                 console.log("Viewing All roles: ");
                 console.table(result);
-                startCMS();
+             startPRTS();
             });
         } else if (answers.start === 'View All Employees') {
             db.query(`SELECT employee.id, employee.codename, employee.race, roles.title AS position, department.dept_name AS department, roles.salary AS salary, manager.codename AS manager
@@ -38,7 +38,7 @@ var startCMS = function(){
             LEFT JOIN employee manager ON employee.manager_id = manager.id`, (err, result) => {
                 console.log("Viewing All employees: ");
                 console.table(result);
-                startCMS();
+             startPRTS();
             });
         } else if (answers.start === 'Add A Department') {  
             inquirer.prompt([{
@@ -54,7 +54,7 @@ var startCMS = function(){
             }]).then((answers) =>{
                 db.query(`INSERT INTO department (dept_name) VALUES (?)`,[answers.department],(err, result) =>{
                     console.log(`Created ${answers.department} and added to the database.`)
-                    startCMS();
+                 startPRTS();
                 });
             });                 
         } else if (answers.start === 'Add A Role') {
@@ -104,7 +104,7 @@ var startCMS = function(){
 
                     db.query(`INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)`, [answers.role, answers.salary, department.id], (err, result) => {
                         console.log(`Added ${answers.role} to the database.`)
-                            startCMS();
+                         startPRTS();
                         });
                     });  
                 });  
@@ -170,11 +170,61 @@ var startCMS = function(){
                 db.query(`INSERT INTO employee (codename, race, role_id, manager_id) VALUES (?, ?, ?, ?)`, [answers.codename, answers.race, role.id, answers.manager.id], (err, result) => {
                     if (err) throw err;
                     console.log(`Added ${answers.codename} to the database.`)
-                        startCMS();
+                     startPRTS();
                     });
                 });                 
-            })
+            });
             
-        } 
-    });
+        } else if (answers.start === 'Update Employee Role') {
+            db.query(`SELECT * from employee, roles`,(err, result) =>{
+                inquirer.prompt([{
+                    type: 'list',
+                    name: 'employee',
+                    message: 'Which operator would you like to reassign?',
+                    choices: () => {
+                        var array = [];
+                        for (var i = 0; i < result.length; i++) {
+                            array.push(result[i].codename);
+                        }
+                        var employeeArray = [...new Set(array)];
+                        return employeeArray;
+                    }
+                },
+                {
+                    type: 'list',
+                    name: 'role',
+                    message: 'What is their new position while on the landship?',
+                    choices: () =>{
+                        var array =[];
+                        for (var i=0; i< result.length; i++) {
+                            array.push(result[i].title);
+                        }
+                        var newArray3 = [...new Set(array)];
+                        return newArray3;
+                    }
+                }
+            ]).then((answers) =>{
+                for (var i= 0; i < result.length; i++) {
+                    if (result[i].codename ===answers.employee){
+                        var name =result[i];
+                    }
+                }
+
+                for (var i=0; i <result.length; i++) {
+                    if(result[i].title === answers.role){
+                        var role = result[i];
+                    }
+                }
+                db.query(`UPDATE employee SET ? WHERE ?`, [{role_id: role},{codename:name}],(err,result)=>{
+                    console.log (`Updated the role for operator ${answers.employee} in the database`)
+                 startPRTS();
+                });
+            })
+            });
+
+        } else if (answers.start === 'Log Out') {
+            db.end();
+            console.log('Terminating connection to the neural network...\nHave a safe day, Doctor.');
+        }
+    })
 };
