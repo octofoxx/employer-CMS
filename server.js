@@ -113,10 +113,10 @@ var startPRTS = function(){
                 inquirer.prompt([
                     {
                     type: 'input',
-                    name: 'codename',
+                    name: 'name',
                     message: "Please enter the new operator's codename.",
-                    validate: (codename) =>{
-                        if(!codename) {
+                    validate: (name) =>{
+                        if(!name) {
                             return 'Error! Codename is required for all new operators, Doctor!';
                         }
                         return true;
@@ -167,9 +167,14 @@ var startPRTS = function(){
                     }
                 }
 
-                db.query(`INSERT INTO employee (codename, race, role_id, manager_id) VALUES (?, ?, ?, ?)`, [answers.codename, answers.race, role.id, answers.manager.id], (err, result) => {
+                for (var i=0; i<result.length; i++) {
+                    if (result[i].codename ===answers.manager){
+                        var manager =result[i];
+                    }
+                }  
+                db.query(`INSERT INTO employee (codename, race, role_id, manager_id) VALUES (?, ?, ?, ?)`, [answers.name, answers.race, role.id, manager.id], (err, result) => {
                     if (err) throw err;
-                    console.log(`Added ${answers.codename} to the database.`)
+                    console.log(`Added ${answers.name} to the database.`)
                      startPRTS();
                     });
                 });                 
@@ -215,7 +220,7 @@ var startPRTS = function(){
                         var role = result[i];
                     }
                 }
-                db.query(`UPDATE employee SET ? WHERE ?`, [role,name],(err,result)=>{
+                db.query(`UPDATE employee SET ? WHERE ?`, [role.id, name],(err,result)=>{
                     console.log (`Updated the role for operator ${answers.employee} in the database`)
                  startPRTS();
                 });
