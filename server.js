@@ -144,7 +144,7 @@ var startPRTS = function(){
                         var newArray = [...new Set(array)];
                         return newArray;
                     }
-                },
+                /*},
                 {
                     // Adding Employee Manager
                     type: 'list',
@@ -157,7 +157,7 @@ var startPRTS = function(){
                         }
                         var newArray2 = [...new Set(array)];
                         return newArray2;
-                        }
+                        } */
                 }
             ]).then((answers) => {
                 // Comparing the result and storing it into the variable
@@ -167,12 +167,12 @@ var startPRTS = function(){
                     }
                 }
 
-                for (var i=0; i<result.length; i++) {
+                /*for (var i=0; i<result.length; i++) {
                     if (result[i].codename ===answers.manager){
                         var manager =result[i];
                     }
-                }  
-                db.query(`INSERT INTO employee (codename, race, role_id, manager_id) VALUES (?, ?, ?, ?)`, [answers.name, answers.race, role.id, manager.id], (err, result) => {
+                } */ 
+                db.query(`INSERT INTO employee (codename, race, role_id, manager_id) VALUES (?, ?, ?)`, [answers.name, answers.race, role.id], (err, result) => {
                     if (err) throw err;
                     console.log(`Added ${answers.name} to the database.`)
                      startPRTS();
