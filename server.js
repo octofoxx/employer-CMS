@@ -108,124 +108,137 @@ var startPRTS = function(){
                         });
                     });  
                 });  
-        } else if (answers.start === 'Add An Employee') {
-            db.query(`Select * FROM employee, roles`,(err, result) => {
+            } else if (answers.start === 'Add An Employee') {
                 inquirer.prompt([
                     {
-                    type: 'input',
-                    name: 'name',
-                    message: "Please enter the new operator's codename.",
-                    validate: (name) =>{
-                        if(!name) {
-                            return 'Error! Codename is required for all new operators, Doctor!';
-                        }
-                        return true;
-                        }
-                    },
-                    {
                         type: 'input',
-                        name: 'race',
-                        message: 'Please input the race for the new operator.',
-                        validate: (race) =>{
-                            if (!race) {
-                                return "Error! Operator's race is required to provide proper support, Doctor!";
+                        name: 'name',
+                        message: "Please enter the new operator's codename.",
+                        validate: (name) =>{
+                            if(!name) {
+                                return 'Error! Codename is required for all new operators, Doctor!';
                             }
                             return true;
+                            }
+                        },
+                        {
+                            type: 'input',
+                            name: 'race',
+                            message: 'Please input the race for the new operator.',
+                            validate: (race) =>{
+                                if (!race) {
+                                    return "Error! Operator's race is required to provide proper support, Doctor!";
+                                }
+                                return true;
+                            }
+                        },
+                ]).then(answer =>{
+                    const selections = [answer.name, answer.race]
+            
+                    const roleSql = `SELECT roles.id, roles.title FROM roles`;
+                    db.query(roleSql, (err, result)=>{
+                        if (err) throw err;
+                        const rolePick= result.map(({id, title})=>({ name:title, value:id}));
+            
+                        inquirer.prompt([{
+                            type: 'list',
+                            name: 'role',
+                            message: "What is the employee's role?",
+                            choices: rolePick
                         }
-                    },
-                    {  type: 'list',
-                    name: 'role',
-                    message: 'What position will this operator fill on the landship?',
-                    choices: () => {
-                        var array = [];
-                        for (var i = 0; i < result.length; i++) {
-                            array.push(result[i].title);
-                        }
-                        var newArray = [...new Set(array)];
-                        return newArray;
-                    }
-                /*},
-                {
-                    // Adding Employee Manager
-                    type: 'list',
-                    name: 'manager',
-                    message: 'Who will oversee the operator?',
-                    choices: () => {
-                        var array = [];
-                        for (var i = 0; i < result.length; i++) {
-                            array.push(result[i].codename);
-                        }
-                        var newArray2 = [...new Set(array)];
-                        return newArray2;
-                        } */
-                }
-            ]).then((answers) => {
-                // Comparing the result and storing it into the variable
-                for (var i = 0; i < result.length; i++) {
-                    if (result[i].title === answers.role) {
-                        var role = result[i];
-                    }
-                }
-
-                /*for (var i=0; i<result.length; i++) {
-                    if (result[i].codename ===answers.manager){
-                        var manager =result[i];
-                    }
-                } */ 
-                db.query(`INSERT INTO employee (codename, race, role_id, manager_id) VALUES (?, ?, ?)`, [answers.name, answers.race, role.id], (err, result) => {
-                    if (err) throw err;
-                    console.log(`Added ${answers.name} to the database.`)
-                     startPRTS();
+                    ]).then(roleChoice =>{
+                        const role = roleChoice.role;
+                        selections.push(role);
+            
+                          const managerSql = `SELECT * FROM employee`;
+            
+                          db.query(managerSql, (err, result) => {
+                            if (err) throw err;
+            
+                            const managers = result.map(({ id, codename}) => ({ name: codename, value: id }));
+            
+                            inquirer.prompt([
+                              {
+                                type: 'list',
+                                name: 'manager',
+                                message: "Who will oversee this operator while on the landship?",
+                                choices: managers
+                              }
+                            ])
+                              .then(managerChoice => {
+                                const manager = managerChoice.manager;
+                            selections.push(manager);
+            
+                                const sql = `INSERT INTO employee (codename, race, role_id, manager_id)
+                                VALUES (?, ?, ?, ?)`;
+            
+                                db.query(sql,selections, (err, result) => {
+                                if (err) throw err;
+                                console.log(`Operator ${answer.name} added to the database, Doctor.`)
+                                startPRTS();
+                          });
+                        });
+                      });
                     });
-                });                 
-            });
+                 });
+              });
             
         } else if (answers.start === 'Update Employee Role') {
-            db.query(`SELECT * from employee, roles`,(err, result) =>{
-                inquirer.prompt([{
-                    type: 'list',
-                    name: 'employee',
-                    message: 'Which operator would you like to reassign?',
-                    choices: () => {
-                        var array = [];
-                        for (var i = 0; i < result.length; i++) {
-                            array.push(result[i].codename);
-                        }
-                        var employeeArray = [...new Set(array)];
-                        return employeeArray;
-                    }
-                },
-                {
-                    type: 'list',
-                    name: 'role',
-                    message: 'What is their new position while on the landship?',
-                    choices: () =>{
-                        var array =[];
-                        for (var i=0; i< result.length; i++) {
-                            array.push(result[i].title);
-                        }
-                        var newArray3 = [...new Set(array)];
-                        return newArray3;
-                    }
-                }
-            ]).then((answers) =>{
-                for (var i= 0; i < result.length; i++) {
-                    if (result[i].codename ===answers.employee){
-                        var name =result[i];
-                    }
-                }
+            const employeeSql = `SELECT * FROM employee`;
 
-                for (var i=0; i <result.length; i++) {
-                    if(result[i].title === answers.role){
-                        var role = result[i];
-                    }
+            db.query(employeeSql, (err, result) => {
+              if (err) throw err; 
+            
+            const employees = result.map(({ id, codename }) => ({ name: codename, value: id }));
+            
+              inquirer.prompt([
+                {
+                  type: 'list',
+                  name: 'name',
+                  message: 'Which operator would you like to reassign?',
+                  choices: employees
                 }
-                db.query(`UPDATE employee SET ? WHERE ?`, [role.id, name],(err,result)=>{
-                    console.log (`Updated the role for operator ${answers.employee} in the database`)
-                 startPRTS();
+              ])
+                .then(answer => {
+                  const selections =[answer.name]
+            
+                  const roleSql = `SELECT * FROM roles`;
+            
+                  db.query(roleSql, (err, result) => {
+                    if (err) throw err; 
+            
+                    const rolePick = result.map(({ id, title }) => ({ name: title, value: id }));
+                    
+                      inquirer.prompt([
+                        {
+                          type: 'list',
+                          name: 'role',
+                          message: "What will the operator's new position be while on the landship?",
+                          choices: rolePick
+                        }
+                      ])
+                          .then(roleChoice => {
+                          const role = roleChoice.role;
+                          selections.push(role); 
+                          
+                          let employee = selections[0]
+                          selections[0] = role
+                          selections[1] = employee 
+                          
+            
+                          const sql = `UPDATE employee SET role_id = ? WHERE id = ?`;
+            
+                          db.query(sql, selections, (err, result) => {
+                            if (err) throw err;
+                          console.log(`Operator has been reassigned, Doctor.`);
+                        
+                          startPRTS();
+                    });
+                  });
                 });
-            })
+              });
             });
+            
 
         } else if (answers.start === 'Log Out') {
             db.end();
