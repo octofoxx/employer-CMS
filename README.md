@@ -24,6 +24,8 @@
   
   To use this application, you will run `server.js` to invoke the app. If cloning the repo, you will need to run the schema.sql and seeds.sql via mySQL, inputting your own credentials into an .env file.
 
+   https://drive.google.com/file/d/1amCuiymwxpfTbSjZe1o03Ftu_bA1wV6F/view - link to video walkthrough of the app from running the schema and seeds data to invoking the app and running through the prompts.
+
 ## [License](#table-of-contents)
   
   The application is covered under the following license:
@@ -33,6 +35,8 @@
 ## [Credits](#table-of-contents)
   
   https://github.com/octofoxx/employer-CMS - repo for this project
+
+  https://gamepress.gg/arknights/ - wiki for Arknights that was referenced for character information.
 
 ## [Tests](#table-of-contents)
   
